@@ -1,0 +1,5 @@
+.env
+__pycache__/
+.vscode/
+env/
+to_check_sthg.py
