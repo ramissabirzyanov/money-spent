@@ -26,7 +26,7 @@ class Expense(NamedTuple):
 def _parse_text_message(message: str) -> tuple:
     """Парсит сообщение о покупке"""
     amount = re.search(r"\d+", message.lower())[0]
-    category = re.search(r"(пр|ав|др|тр|ка)", message.lower())[0]
+    category = re.search(r"|".join(CATEGORIES.keys()), message.lower())[0]
     category_codename = CATEGORIES.get(category)
     return amount, category_codename
 
