@@ -1,51 +1,48 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import asyncpg
 
 
-def get_connection(db):
-    connection = psycopg2.connect(db)
-    connection.autocommit = True
-    return connection
+async def get_connection(db):
+    await asyncpg.connect(db)
 
 
-def insert_to_db(connection, category_codename, amount, table='expenses'):
-    with connection.cursor() as cursor:
-        cursor.execute(
+async def insert_to_db(connection, category_codename, amount, table='expenses'):
+    async with connection.transaction():
+        await connection.execute(
             f"INSERT INTO {table} (category_codename, amount, created_at)\
             VALUES ('{category_codename}', {amount}, NOW());",
         )
 
 
-def get_category_name(connection, category_codename):
-    with connection.cursor() as cursor:
-        cursor.execute(
+async def get_category_name(connection, category_codename):
+    async with connection.transaction():
+        await connection.fetchval(
             f"SELECT name\
             FROM categories\
-            WHERE categories.codename='{category_codename}';",
+            WHERE categories.codename='{category_codename}';"
         )
-        return cursor.fetchone()[0]
 
 
-def get_total_expenses_by_categories(connection, table='expenses'):
-    with connection.cursor() as cursor:
-        cursor.execute(
+async def get_total_expenses_by_categories(connection, table='expenses'):
+    async with connection.transaction:
+        await connection.fetch(
             f"SELECT SUM(amount) as totals, categories.name\
             FROM {table} LEFT JOIN categories\
             ON {table}.category_codename=categories.codename\
             GROUP BY categories.name;",
         )
-        return cursor.fetchall()
 
 
-def delete_last_added_expense(connection, table='expenses'):
-    with connection.cursor(cursor_factory=RealDictCursor) as cursor:
-        cursor.execute(
-            f"SELECT id, amount, categories.name as name\
-            FROM {table} LEFT JOIN categories\
-            ON {table}.category_codename=categories.codename\
-            GROUP BY id, name\
-            ORDER BY id desc LIMIT 1;",
-        )
-        last_expense = cursor.fetchone()
-        cursor.execute(f"DELETE FROM expenses WHERE id='{last_expense['id']}'")
-        return last_expense
+# def delete_last_added_expense(connection, table='expenses'):
+#     with connection.cursor(cursor_factory=RealDictCursor) as cursor:
+#         cursor.execute(
+#             f"SELECT id, amount, categories.name as name\
+#             FROM {table} LEFT JOIN categories\
+#             ON {table}.category_codename=categories.codename\
+#             GROUP BY id, name\
+#             ORDER BY id desc LIMIT 1;",
+#         )
+#         last_expense = cursor.fetchone()
+#         cursor.execute(f"DELETE FROM expenses WHERE id='{last_expense['id']}'")
+#         return last_expense
+
+

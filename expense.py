@@ -50,8 +50,8 @@ def get_total_expenses_by_categories() -> str:
     return '\n'.join([f"потрачено {total}р. в категории {category}" for total, category in result])
 
 
-def delete_last_added_expense():
-    """Удаление последней записи о покупки"""
-    conn = db.get_connection(DATABASE_URL)
-    last_expense = db.delete_last_added_expense(conn)
-    return f"Удалена покупка на сумму {last_expense['amount']}р. в категории {last_expense['name']}"
+# def delete_last_added_expense():
+#     """Удаление последней записи о покупки"""
+#     conn = db.get_connection(DATABASE_URL)
+#     last_expense = db.delete_last_added_expense(conn)
+#     return f"Удалена покупка на сумму {last_expense['amount']}р. в категории {last_expense['name']}"
