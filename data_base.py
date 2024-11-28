@@ -2,7 +2,7 @@ import asyncpg
 
 
 async def get_connection(db):
-    await asyncpg.connect(db)
+    return await asyncpg.connect(db)
 
 
 async def insert_to_db(connection, category_codename, amount, table='expenses'):
@@ -15,16 +15,16 @@ async def insert_to_db(connection, category_codename, amount, table='expenses'):
 
 async def get_category_name(connection, category_codename):
     async with connection.transaction():
-        await connection.fetchval(
+        return await connection.fetchval(
             f"SELECT name\
             FROM categories\
-            WHERE categories.codename='{category_codename}';"
+            WHERE categories.codename='{category_codename}';",
         )
 
 
 async def get_total_expenses_by_categories(connection, table='expenses'):
-    async with connection.transaction:
-        await connection.fetch(
+    async with connection.transaction():
+        return await connection.fetch(
             f"SELECT SUM(amount) as totals, categories.name\
             FROM {table} LEFT JOIN categories\
             ON {table}.category_codename=categories.codename\
@@ -32,17 +32,14 @@ async def get_total_expenses_by_categories(connection, table='expenses'):
         )
 
 
-# def delete_last_added_expense(connection, table='expenses'):
-#     with connection.cursor(cursor_factory=RealDictCursor) as cursor:
-#         cursor.execute(
-#             f"SELECT id, amount, categories.name as name\
-#             FROM {table} LEFT JOIN categories\
-#             ON {table}.category_codename=categories.codename\
-#             GROUP BY id, name\
-#             ORDER BY id desc LIMIT 1;",
-#         )
-#         last_expense = cursor.fetchone()
-#         cursor.execute(f"DELETE FROM expenses WHERE id='{last_expense['id']}'")
-#         return last_expense
-
-
+async def delete_last_added_expense(connection, table='expenses'):
+    async with connection.transaction():
+        last_expense = await connection.fetchrow(
+            f"SELECT id, amount, categories.name as name\
+            FROM {table} LEFT JOIN categories\
+            ON {table}.category_codename=categories.codename\
+            GROUP BY id, name\
+            ORDER BY id desc LIMIT 1;",
+        )
+        await connection.execute(f"DELETE FROM expenses WHERE id='{last_expense['id']}'")
+        return last_expense

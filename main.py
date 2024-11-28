@@ -35,7 +35,7 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def add_expenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        new_expense = expense.add_expense(update.message.text)
+        new_expense = await expense.add_expense(update.message.text)
     except TypeError:
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -46,13 +46,13 @@ async def add_expenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def total_expenses_by_categories(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = expense.get_total_expenses_by_categories()
+    text = await expense.get_total_expenses_by_categories()
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=text)
 
 
 async def delete_last_added_expense(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = expense.delete_last_added_expense()
+    text = await expense.delete_last_added_expense()
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=text)
 

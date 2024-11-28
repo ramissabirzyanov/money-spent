@@ -31,27 +31,27 @@ def _parse_text_message(message: str) -> tuple:
     return amount, category_codename
 
 
-def add_expense(message: str) -> Expense:
+async def add_expense(message: str) -> Expense:
     """Добавляет в БД новую покупку"""
     parsed_message = _parse_text_message(message)
     amount = parsed_message[0]
     category_codename = parsed_message[1]
-    conn = db.get_connection(DATABASE_URL)
-    db.insert_to_db(conn, category_codename, amount)
-    category_name = db.get_category_name(conn, category_codename)
+    conn = await db.get_connection(DATABASE_URL)
+    await db.insert_to_db(conn, category_codename, amount)
+    category_name = await db.get_category_name(conn, category_codename)
     new_expense = Expense(id=None, amount=amount, category_name=category_name)
     return f"Покупка в категории {new_expense.category_name} на {new_expense.amount}р."
 
 
-def get_total_expenses_by_categories() -> str:
+async def get_total_expenses_by_categories() -> str:
     """Подсчет суммы расходов в категории"""
-    conn = db.get_connection(DATABASE_URL)
-    result = db.get_total_expenses_by_categories(conn)
+    conn = await db.get_connection(DATABASE_URL)
+    result = await db.get_total_expenses_by_categories(conn)
     return '\n'.join([f"потрачено {total}р. в категории {category}" for total, category in result])
 
 
-# def delete_last_added_expense():
-#     """Удаление последней записи о покупки"""
-#     conn = db.get_connection(DATABASE_URL)
-#     last_expense = db.delete_last_added_expense(conn)
-#     return f"Удалена покупка на сумму {last_expense['amount']}р. в категории {last_expense['name']}"
+async def delete_last_added_expense():
+    """Удаление последней записи о покупки"""
+    conn = await db.get_connection(DATABASE_URL)
+    last_expense = await db.delete_last_added_expense(conn)
+    return f"Удалена покупка на сумму {last_expense['amount']}р. в категории {last_expense['name']}"
