@@ -4,6 +4,7 @@ import default_messages
 from telegram import Update
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes
 import expense
+import datetime
 
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
@@ -49,7 +50,12 @@ async def total_expenses_by_categories(update: Update, context: ContextTypes.DEF
     text = await expense.get_total_expenses_by_categories()
     await context.bot.send_message(chat_id=update.effective_chat.id,
                                    text=text)
-
+    
+async def total_month_expenses(update: Update, context: ContextTypes.DEFAULT_TYPE):  
+    text = await expense.get_total_month_expenses()
+    await context.bot.send_message(chat_id=update.effective_chat.id,
+                                   text=text)
+    
 
 async def delete_last_added_expense(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = await expense.delete_last_added_expense()
@@ -68,6 +74,8 @@ if __name__ == '__main__':
 
     total_handler = CommandHandler('total', total_expenses_by_categories)
     application.add_handler(total_handler)
+
+    application.job_queue.run_monthly(total_month_expenses, when=datetime.time.max, day='last')
 
     delete_handler = CommandHandler('del', delete_last_added_expense)
     application.add_handler(delete_handler)

@@ -16,6 +16,22 @@ CATEGORIES = {
 }
 
 
+MONTHS = {
+    1: 'январь',
+    2: 'февраль',
+    3: 'март',
+    4: 'апрель',
+    5: 'май',
+    6: 'июнь',
+    7: 'июль',
+    8: 'август',
+    9: 'сентябрь',
+    10: 'октябрь',
+    11: 'ноябрь',
+    12: 'декабрь',
+}
+
+
 class Expense(NamedTuple):
     """Структура добавленного в БД новой покупки"""
     id: Optional[int]
@@ -48,6 +64,14 @@ async def get_total_expenses_by_categories() -> str:
     conn = await db.get_connection(DATABASE_URL)
     result = await db.get_total_expenses_by_categories(conn)
     return '\n'.join([f"потрачено {total}р. в категории {category}" for total, category in result])
+
+
+async def get_total_month_expenses() -> str:
+    """Вывод названия месяца последнего расхода"""
+    conn = await db.get_connection(DATABASE_URL)
+    month, month_expenses = await db.get_total_expenses_for_last_month(conn)
+    return f"За {month} итого было потречено:\n" + \
+            '\n'.join([f"{total}р. в категории {category}" for total, category in month_expenses])
 
 
 async def delete_last_added_expense():
