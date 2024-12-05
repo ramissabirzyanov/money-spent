@@ -39,7 +39,7 @@ async def add_expenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     await context.bot.send_message(chat_id=chat_id,
                                    text=new_expense)
-    if not context.job_queue.jobs():
+    if not context.job_queue.get_jobs_by_name(name='monthly_task'):
         context.job_queue.run_monthly(monthly_task, when=datetime.time.max, day=-1, chat_id=chat_id)
 
 

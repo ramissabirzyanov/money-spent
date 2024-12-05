@@ -37,14 +37,18 @@ async def delete_last_added_expense(connection, table='expenses'):
 
 
 async def get_expenses_for_current_month_by_category(connection, table='expenses'):
+    month = datetime.now().month
     async with connection.transaction():
-        month = datetime.now().month
+        month_expense = await connection.fetchval(
+            f"SELECT SUM(amount) from {table}\
+            WHERE EXTRACT (MONTH FROM created_at)={month};",
+        )
 
-        month_expenses = await connection.fetch(
+        month_expenses_by_cat = await connection.fetch(
             f"SELECT SUM(amount) as totals, categories.name\
             FROM {table} LEFT JOIN categories\
             ON {table}.category_codename=categories.codename\
             WHERE EXTRACT (MONTH FROM created_at)={month}\
             GROUP BY categories.name;",
         )
-        return month, month_expenses
+        return month, month_expense, month_expenses_by_cat
