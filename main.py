@@ -2,7 +2,7 @@ import os
 import logging
 import default_messages
 from telegram import Update
-from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes, CallbackContext
 import expense
 import datetime
 
@@ -40,19 +40,19 @@ async def add_expenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id,
                                    text=new_expense)
     if not context.job_queue.get_jobs_by_name(name='monthly_task'):
-        context.job_queue.run_monthly(monthly_task, when=datetime.time.max, day=-1, chat_id=chat_id)
+        context.job_queue.run_monthly(monthly_task, when=datetime.time(12, 23, 0), day=5, chat_id=chat_id)
 
 
-async def monthly_task(context: ContextTypes.DEFAULT_TYPE):
+async def monthly_task(context: CallbackContext):
     chat_id = context.job.chat_id
     total_month_expenses = await expense.get_current_month_expenses()
     await context.bot.send_message(chat_id=chat_id, text=total_month_expenses)
 
 
 async def current_month_expenses_by_categories(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = await expense.get_current_month_expenses()
+    total_month_expenses_by_cat = await expense.get_current_month_expenses()
     await context.bot.send_message(chat_id=update.effective_chat.id,
-                                   text=text)
+                                   text=total_month_expenses_by_cat)
 
 
 async def delete_last_added_expense(update: Update, context: ContextTypes.DEFAULT_TYPE):
