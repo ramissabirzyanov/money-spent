@@ -59,19 +59,14 @@ async def add_expense(message: str) -> Expense:
     return f"Покупка в категории {new_expense.category_name} на {new_expense.amount}р."
 
 
-async def get_total_expenses_by_categories() -> str:
-    """Подсчет суммы расходов в категории"""
+async def get_current_month_expenses() -> str:
+    """Вывод расходов по итогам текущего месяца"""
     conn = await db.get_connection(DATABASE_URL)
-    result = await db.get_total_expenses_by_categories(conn)
-    return '\n'.join([f"потрачено {total}р. в категории {category}" for total, category in result])
-
-
-async def get_total_month_expenses() -> str:
-    """Вывод названия месяца последнего расхода"""
-    conn = await db.get_connection(DATABASE_URL)
-    month, month_expenses = await db.get_total_expenses_for_last_month(conn)
-    return f"За {month} итого было потречено:\n" + \
+    current_month, month_expenses = await db.get_expenses_for_current_month_by_category(conn)
+    if month_expenses:
+        return f"За {MONTHS[current_month]} потречено:\n" + \
             '\n'.join([f"{total}р. в категории {category}" for total, category in month_expenses])
+    return f"За {MONTHS[current_month]} расходов нет"
 
 
 async def delete_last_added_expense():
