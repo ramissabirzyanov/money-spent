@@ -5,6 +5,7 @@ from telegram import Update
 from telegram.ext import filters, MessageHandler, ApplicationBuilder, CommandHandler, ContextTypes, CallbackContext
 import expense
 import datetime
+# import pytz
 
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
@@ -40,7 +41,8 @@ async def add_expenses(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id,
                                    text=new_expense)
     if not context.job_queue.get_jobs_by_name(name='monthly_task'):
-        context.job_queue.run_monthly(monthly_task, when=datetime.time(12, 23, 0), day=5, chat_id=chat_id)
+        # tz = pytz.timezone("Europe/Moscow")
+        context.job_queue.run_monthly(monthly_task, when=datetime.time.max, day=-1, chat_id=chat_id)
 
 
 async def monthly_task(context: CallbackContext):
